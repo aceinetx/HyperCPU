@@ -40,6 +40,7 @@ namespace HyperCPU {
     JML = 0x0022,
     CMP = 0x0023,
     MOV = 0x007F,
+    DUMP = 0x0080,
     _CONT = 0x6934
   };
 
@@ -82,6 +83,7 @@ namespace HyperCPU {
       case Opcode::JMGR:
       case Opcode::JML:
       case Opcode::CMP:
+      case Opcode::DUMP:
         return true;
       default:
         return false;

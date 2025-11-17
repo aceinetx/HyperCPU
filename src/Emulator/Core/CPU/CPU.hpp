@@ -50,7 +50,7 @@ namespace HyperCPU {
     // Flags
     bool crf, ovf, udf, zrf;
 
-    std::array<opcode_handler, 128> opcode_handler_assoc;
+    std::array<opcode_handler, 256> opcode_handler_assoc;
 
     std::pair<OperandContainer, OperandContainer> GetOperands(OperandTypes op_types, Mode md, OperandContainer& op1, OperandContainer& op2);
     OperandContainer GetRegister(OperandContainer& op1);
@@ -112,6 +112,7 @@ namespace HyperCPU {
     DECLARE_INSTR(JML);
     DECLARE_INSTR(PUSH);
     DECLARE_INSTR(POP);
+    DECLARE_INSTR(DUMP);
 
     // I/O
     std::array<read_operation_handler, 256> read_io_handlers;
