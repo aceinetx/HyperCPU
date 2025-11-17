@@ -40,9 +40,10 @@ add_library(hcpu-core STATIC
     Core/CPU/CPU.cpp
     Core/CPU/OperandsEvaluation.cpp
     Core/CPU/Stack.cpp
+		Core/Dumper/Dumper.cpp
 )
 target_include_directories(hcpu-core PUBLIC ${PROJECT_SOURCE_DIR}/src)
-target_link_libraries(hcpu-core PUBLIC hcpu-common spdlog::spdlog)
+target_link_libraries(hcpu-core PUBLIC hcpu-common spdlog::spdlog abseil::abseil)
 
 add_executable(hcemul Main.cpp)
 target_link_libraries(hcemul PUBLIC

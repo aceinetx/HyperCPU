@@ -12,11 +12,13 @@
 
 namespace HyperCPU {
   class MemoryControllerST;
+  class Dumper;
 
   class CPU {
   private:
     friend class Decoder;
     friend class MemoryControllerST;
+    friend class Dumper;
 
     using opcode_handler = std::function<void(const IInstruction& instr, OperandContainer op1, OperandContainer op2)>;
     using read_operation_handler = std::function<std::uint8_t()>;
