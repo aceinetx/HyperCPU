@@ -3,6 +3,7 @@
 #include <PCH/CStd.hpp>
 #include <absl/strings/str_replace.h>
 #include <fmt/chrono.h>
+#include <spdlog/spdlog.h>
 
 HyperCPU::Dumper& HyperCPU::Dumper::getInstance() {
   static HyperCPU::Dumper instance;
@@ -11,8 +12,7 @@ HyperCPU::Dumper& HyperCPU::Dumper::getInstance() {
 
 void HyperCPU::Dumper::DumpCPUState(HyperCPU::CPU* cpu) {
   // Template
-  std::string dump_text = R"(
-================ HyperCPU dump (%time%) ================
+  std::string dump_text = R"(================ HyperCPU dump (%time%) ================
 Registers:
 	GP:
 	x0 = %x0% | x1 = %x1% | x2 = %x2% | x3 = %x3% | x4 = %x4% | x5 = %x5% | x6 = %x6% | x7 = %x7%
@@ -22,7 +22,7 @@ Registers:
 	xgdp = %xgdp%
 	xivt = %xivt%
 	xip = %xip%
-	)";
+)";
   // TODO: Show memory around xip
 
   // Map registers to their values
@@ -57,5 +57,16 @@ Registers:
   }
   fmt::println("{}", dump_text);
 
-  // TODO: write to file
+  // Write to file
+  const std::string output("hcpu_dump.txt");
+  std::ofstream file(output, std::ios::app);
+  if (!file.is_open()) {
+    fmt::println("{}: open failed", output);
+    return;
+  }
+
+  file << dump_text;
+
+  file.close();
+  fmt::println("(This dump has been written to hcpu_dump.txt)");
 }
