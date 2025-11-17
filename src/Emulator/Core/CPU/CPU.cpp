@@ -55,6 +55,7 @@ HyperCPU::CPU::CPU(std::uint16_t core_count, std::uint64_t mem_size,
       xip(&data[10]),
       xgdp(&data[11]),
       xivt(&data[12]),
+      xfst(&data[13]),
       ivt_initialized(false),
       crf(false),
       ovf(false),
@@ -63,6 +64,8 @@ HyperCPU::CPU::CPU(std::uint16_t core_count, std::uint64_t mem_size,
       io_ctl(std::make_unique<SimpleIOImpl>()) {
   // Initializing all register pointers
   std::memset(&data, 0, sizeof(data));
+  *xbp = mem_size;
+  *xsp = mem_size;
 
   // TODO: Use std::bind instead of lambdas
   opcode_handler_assoc[static_cast<std::uint16_t>(HyperCPU::Opcode::HALT)] =
@@ -133,6 +136,10 @@ HyperCPU::CPU::CPU(std::uint16_t core_count, std::uint64_t mem_size,
       [this](const IInstruction& instr, OperandContainer op1, OperandContainer op2) -> void { this->ExecJML(instr, op1, op2); };
   opcode_handler_assoc[static_cast<std::uint16_t>(HyperCPU::Opcode::CMP)] =
       [this](const IInstruction& instr, OperandContainer op1, OperandContainer op2) -> void { this->ExecCMP(instr, op1, op2); };
+  opcode_handler_assoc[static_cast<std::uint16_t>(HyperCPU::Opcode::LODSB)] =
+      [this](const IInstruction& instr, OperandContainer op1, OperandContainer op2) -> void { this->ExecLODSB(instr, op1, op2); };
+  opcode_handler_assoc[static_cast<std::uint16_t>(HyperCPU::Opcode::STDSB)] =
+      [this](const IInstruction& instr, OperandContainer op1, OperandContainer op2) -> void { this->ExecSTDSB(instr, op1, op2); };
   opcode_handler_assoc[static_cast<std::uint16_t>(HyperCPU::Opcode::DUMP)] =
       [this](const IInstruction& instr, OperandContainer op1, OperandContainer op2) -> void { this->ExecDUMP(instr, op1, op2); };
 

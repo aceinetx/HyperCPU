@@ -35,7 +35,7 @@ namespace HyperCPU {
     bool halted;
 
     // General space for registers
-    std::uint64_t data[13];
+    std::uint64_t data[14];
 
     // GP Registers
     std::uint64_t *x0, *x1, *x2, *x3, *x4, *x5, *x6, *x7;
@@ -46,7 +46,7 @@ namespace HyperCPU {
     std::uint8_t *xlll0, *xlll1, *xlll2, *xlll3;
 
     // Specific registers
-    std::uint64_t *xbp, *xsp, *xip, *xgdp, *xivt;
+    std::uint64_t *xbp, *xsp, *xip, *xgdp, *xivt, *xfst;
     bool ivt_initialized;
 
     // Flags
@@ -114,6 +114,8 @@ namespace HyperCPU {
     DECLARE_INSTR(JML);
     DECLARE_INSTR(PUSH);
     DECLARE_INSTR(POP);
+    DECLARE_INSTR(LODSB);
+    DECLARE_INSTR(STDSB);
     DECLARE_INSTR(DUMP);
 
     // I/O
