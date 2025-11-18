@@ -1,16 +1,15 @@
 #include "Emulator/Core/Dumper/Dumper.hpp"
 #include "Emulator/Core/CPU/CPU.hpp"
-#include <PCH/CStd.hpp>
 #include <absl/strings/str_replace.h>
 #include <fmt/chrono.h>
 #include <spdlog/spdlog.h>
 
-HyperCPU::Dumper& HyperCPU::Dumper::getInstance() {
+HyperCPU::Dumper& HyperCPU::Dumper::GetInstance() {
   static HyperCPU::Dumper instance;
   return instance;
 }
 
-void HyperCPU::Dumper::DumpCPUState(HyperCPU::CPU* cpu) {
+std::optional<std::string> HyperCPU::Dumper::DumpCPUState(HyperCPU::CPU* cpu, std::optional<HyperCPU::cpu_exceptions> exception) {
   // Template
   std::string dump_text = R"(================ HyperCPU dump (%time%) ================
 Registers:
@@ -29,6 +28,7 @@ Registers:
 	xgdp = %xgdp%
 	xivt = %xivt%
 	xip = %xip%
+Exception: %exc%
 )";
   // TODO: Show memory around xip
 
@@ -77,9 +77,17 @@ Registers:
       {"xip", cpu->xip},
   };
 
-  // Replace placeholders
   auto now = std::chrono::system_clock::now();
   std::string now_text = fmt::format("{:%Y-%m-%d %H:%M:%S}", now);
+
+  std::map<std::string, std::variant<std::string>> placeholderMapping = {
+      {"time", now_text},
+      {"exc", "<No exception>"}};
+  if (exception.has_value()) {
+    placeholderMapping["exc"] = GetExceptionName(exception.value());
+  }
+
+  // Replace placeholders
   dump_text = absl::StrReplaceAll(dump_text, {{"%time%", now_text}});
 
   for (const auto& [name, value] : registerMapping) {
@@ -90,6 +98,14 @@ Registers:
     },
                value);
   }
+  for (const auto& [name, value] : placeholderMapping) {
+    std::string name_placeholder = fmt::format("%{}%", name);
+
+    std::visit([&dump_text, name_placeholder](auto&& arg) {
+      dump_text = absl::StrReplaceAll(dump_text, {{name_placeholder, std::forward<decltype(arg)>(arg)}});
+    },
+               value);
+  }
   fmt::println("{}", dump_text);
 
   // Write to file
@@ -97,11 +113,32 @@ Registers:
   std::ofstream file(output, std::ios::app);
   if (!file.is_open()) {
     fmt::println("{}: open failed", output);
-    return;
+    return {};
   }
 
   file << dump_text;
 
   file.close();
   fmt::println("(This dump has been written to hcpu_dump.txt)");
+
+  return dump_text;
+}
+
+std::string HyperCPU::Dumper::GetExceptionName(std::uint64_t index) {
+  switch (index) {
+  case static_cast<std::uint64_t>(HyperCPU::cpu_exceptions::IA):
+    return "IA <InvalidAccess>";
+  case static_cast<std::uint64_t>(HyperCPU::cpu_exceptions::IO):
+    return "IO <InvalidOpcode>";
+  case static_cast<std::uint64_t>(HyperCPU::cpu_exceptions::ZRDIV):
+    return "ZRDIV <ZeroDivision>";
+  case static_cast<std::uint64_t>(HyperCPU::cpu_exceptions::SEGF):
+    return "SEGF";
+  default:
+    return fmt::format("{} <Undocumented>", index);
+  }
+}
+
+std::string HyperCPU::Dumper::GetExceptionName(HyperCPU::cpu_exceptions exception) {
+  return GetExceptionName(static_cast<std::uint64_t>(exception));
 }

@@ -4,6 +4,5 @@
 #include <fmt/chrono.h>
 
 void HyperCPU::CPU::ExecDUMP(const IInstruction& /* instr */, OperandContainer /* op1 */, OperandContainer /* op2 */) {
-  auto& dumper = HyperCPU::Dumper::getInstance();
-  dumper.DumpCPUState(this);
+  Dumper::GetInstance().DumpCPUState(this, {});
 }

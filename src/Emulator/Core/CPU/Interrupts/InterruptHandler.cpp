@@ -3,16 +3,19 @@
 #include "Common/LanguageSpec/Opcodes.hpp"
 #include "Emulator/Core/CPU/CPU.hpp"
 #include "Emulator/Core/CPU/Interrupts/ReservedInterrupts.hpp"
+#include "Emulator/Core/Dumper/Dumper.hpp"
 #include "PCH/CStd.hpp"
 
 void HyperCPU::CPU::TriggerInterrupt(HyperCPU::cpu_exceptions exception) {
   if (*xip >= binary_size) {
     spdlog::error("XIP exceeded the binary size, aborting!");
+    Dumper::GetInstance().DumpCPUState(this, {});
     std::abort();
   }
 
   if (!ivt_initialized || pending_interrupt.has_value()) {
     spdlog::error("Interrupt was triggered, but failed to execute handler! XIP: {}", *xip);
+    Dumper::GetInstance().DumpCPUState(this, exception);
     std::abort();
   }
 
